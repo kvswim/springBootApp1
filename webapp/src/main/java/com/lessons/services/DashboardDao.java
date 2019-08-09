@@ -69,4 +69,6 @@ public class DashboardDao
 
         logger.debug("addNewRecord finished.");
     }
+
+
 }
