@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -142,4 +143,21 @@ public class DashboardController {
                 .body(reportDTO);
     }
 
+    @RequestMapping(value="/api/reports/approve", method=RequestMethod.POST, produces="application/json")
+    public ResponseEntity<?> approveReport(@RequestParam(name="id", required = true) Integer id,
+                                           @RequestParam(name="approved", required = true) Boolean approved)
+    {
+        if(!reportService.verifyReportExists(id))
+        {
+            return ResponseEntity
+                    .status(HttpStatus.I_AM_A_TEAPOT)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("may be short and stout");
+        }
+        reportService.approveReport(id, approved);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body("");
+
+    }
 }
