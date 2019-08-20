@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Controller("com.lessons.controllers.IndicatorController")
 public class IndicatorController {
@@ -19,16 +20,26 @@ public class IndicatorController {
     @Resource
     private IndicatorService indicatorService;
 
+    //Endpoint is non-operational, see DTO and uncomment "count"
     @RequestMapping(value="/api/indicator/count", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> getIndicatorCount()
     {
         logger.debug("getIndicatorCount() started.");
 
         IndicatorDTO res = new IndicatorDTO();
-        res.setCount(indicatorService.countIndicators());
+        //res.setCount(indicatorService.countIndicators());
 
         return ResponseEntity
-                .status(HttpStatus.I_AM_A_TEAPOT)
+                .status(HttpStatus.OK)
                 .body(res);
+    }
+
+    @RequestMapping(value="/api/indicator/all", method=RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<?> getAllIndicatorsController() {
+        logger.debug("getAllIndicatorsController() Started");
+        List<IndicatorDTO> listOfAllIndicators = indicatorService.getAllIndicatorsService();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(listOfAllIndicators);
     }
 }

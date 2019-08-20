@@ -1,0 +1,29 @@
+jt.queryForRowSet()
+returns RowSet, can do rs.next(), rs.get(<field>)
+Case: Join table results in nothing - OK
+
+jt.queryForList()
+Multiple rows, single column
+
+jt.queryForObject()
+Flexible, single row single cell can be converted to object.
+Could also count with it...
+Cases: 1) Zero results - OK
+       2) One result - OK
+       3) Two+ results - OK
+       4) Join table results in nothing - explosions
+
+jt.queryForMap()
+Single row, multiple columns
+
+jt.query()
+??? Use RowMapper, kinda like a custom implementation. Can even save directly to DTO
+
+jt.update()
+Insert/update a row. Only returns # of rows affected
+
+
+Lessons 08-20-2019
+1. queryForObject() for counts works 95% of the time but will blow up when a join results in nothing
+2. rowMapper is for cool kids, but be sure you have getters and setters inside the DTO
+3. Rename DTO fields to return to frontend using the @JsonProperty("<name>") tag
