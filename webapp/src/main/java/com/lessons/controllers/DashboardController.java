@@ -1,6 +1,5 @@
 package com.lessons.controllers;
 
-
 import com.lessons.models.ReportDTO;
 import com.lessons.services.DashboardDao;
 import com.lessons.services.ReportService;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,17 +97,17 @@ public class DashboardController {
                 .body(resultingReport);
     }
 
-    @RequestMapping(value="/api/reports/{id}" ,method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<?> getOneReportPrettyURL(@PathVariable(name="id") Integer reportId)
-    {
-        logger.debug("getOneReport() started, reportId={}",reportId);
-
-        Map<String, Object> resultingReport = reportService.getReport(reportId);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(resultingReport);
-    }
+//    @RequestMapping(value="/api/reports/{id}" ,method = RequestMethod.GET, produces = "application/json")
+//    public ResponseEntity<?> getOneReportPrettyURL(@PathVariable(name="id") Integer reportId)
+//    {
+//        logger.debug("getOneReport() started, reportId={}",reportId);
+//
+//        Map<String, Object> resultingReport = reportService.getReport(reportId);
+//
+//        return ResponseEntity
+//                .status(HttpStatus.OK)
+//                .body(resultingReport);
+//    }
 
     @RequestMapping(value="/api/reports/all", method=RequestMethod.GET, produces="application/json")
     public ResponseEntity<?> getAllReports()

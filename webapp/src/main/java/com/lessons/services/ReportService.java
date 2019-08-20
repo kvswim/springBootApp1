@@ -1,9 +1,10 @@
 package com.lessons.services;
 
-import com.lessons.controllers.DashboardController;
-import com.lessons.models.ReportDTO;
+import com.lessons.models.ShortReportDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -13,8 +14,10 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,31 @@ public class ReportService {
 
     @Resource
     private DashboardDao dashboardDao;
+
+    @Value("${development.mode}")
+    private Boolean developmentMode;
+
+    @Value("${network.name}")
+    private String networkName;
+
+    public ReportService()
+    {
+        logger.debug("Starting constructor. The value of developmentMode is: {}", developmentMode);
+        logger.debug("Starting constructor. The value of network is: {}", networkName);
+    }
+
+    @PostConstruct
+    public void reportServicePostConstruct()
+    {
+        logger.debug("Inside postconstructor, the value of developmentMode is: {}", developmentMode);
+        logger.debug("Inside postconstructor, the value of network is: {}", networkName);
+
+        if(!(networkName.equalsIgnoreCase("NIPR") || networkName.equalsIgnoreCase("SIPR")))
+        {
+            throw new RuntimeException("The networkName was invalid, was: " + networkName);
+        }
+    }
+
 
     public Map<String, Object> getReport(int reportId)
     {
@@ -90,6 +118,57 @@ public class ReportService {
        JdbcTemplate jt = new JdbcTemplate(this.dataSource);
        SqlRowSet rs = jt.queryForRowSet(sql, id);
        return rs.next();
+    }
+
+    public void deleteReportService(final Integer reportId)
+    {
+        TransactionTemplate tt = new TransactionTemplate();
+        tt.setTransactionManager(new DataSourceTransactionManager(this.dataSource));
+        tt.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                //delete from reports
+                JdbcTemplate jt = new JdbcTemplate(dataSource);
+                String sql = "delete from reports where id = ?";
+                jt.update(sql, reportId);
+
+                //add audit record to reports_aud
+                sql = "insert into reports_aud (rev, rev_type, id)"
+                        + "values (:rev, :rev_type, :id)";
+                Map<String, Object> inputParams = new HashMap<>();
+                inputParams.put("rev", dashboardDao.getNextValue()); //get next value in seq as txn id
+                inputParams.put("rev_type", 2); // 2=delete
+                inputParams.put("id", reportId);
+                NamedParameterJdbcTemplate np = new NamedParameterJdbcTemplate(dataSource);
+                np.update(sql, inputParams);
+            }
+        });
+    }
+
+    public List<ShortReportDTO> getAllShortReports() {
+        JdbcTemplate jt = new JdbcTemplate(this.dataSource);
+        List<ShortReportDTO> resultingListofShortReports = new ArrayList<>();
+
+        String sql = "select * from reports";
+        SqlRowSet rs = jt.queryForRowSet(sql);
+
+        while(rs.next())
+        {
+            ShortReportDTO thisDTO = new ShortReportDTO();
+            thisDTO.setDescription(rs.getString("description"));
+            thisDTO.setDisplayName(rs.getString("display_name"));
+            thisDTO.setId(rs.getInt("id"));
+            resultingListofShortReports.add(thisDTO);
+        }
+        return resultingListofShortReports;
+    }
+
+    public List<ShortReportDTO> getAllShortReports2() {
+        BeanPropertyRowMapper rowMapper = new BeanPropertyRowMapper(ShortReportDTO.class);
+        JdbcTemplate jt = new JdbcTemplate(this.dataSource);
+        String sql = "select id, display_name, description from reports";
+        List<ShortReportDTO> resultingListofShortReports = jt.query(sql, rowMapper);
+        return resultingListofShortReports;
     }
 }
 

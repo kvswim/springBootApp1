@@ -12,5 +12,13 @@ app.datasource:
   driver-class-name: org.postgresql.Driver
   url: jdbc:postgresql://localhost:5432/app1_db
   username: app1_user
-  password: secret
+  password: ENC(UMGziawNgizYtbWgBI0JUA==)
   maxPoolSize: 10
+
+development.mode: FaLsE
+network.name: SIPR
+
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    password: 'ab5823423464j1k2#><!!6298<-+'
