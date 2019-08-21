@@ -15,8 +15,8 @@ app.datasource:
   password: ENC(UMGziawNgizYtbWgBI0JUA==)
   maxPoolSize: 10
 
-development.mode: FaLsE
-network.name: SIPR
+development.mode: false
+network.name: NIPR
 
 jasypt:
   encryptor:

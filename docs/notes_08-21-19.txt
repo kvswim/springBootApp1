@@ -1,0 +1,31 @@
+GenericExceptionHandler:
+    @ControllerAdvice for class annotation
+    @ExceptionHandler for method annotation
+
+Catches errors thrown by Spring,
+    prevents having to put try/catch blocks in every controller method
+    Can check whether dev mode is enabled
+    HttpServletRequest can give back the offending REST point
+
+Unit Tests - opinions of traderres
+    Pros:   Verifies that a section of code works
+            Good for testing edge cases
+            Jenkins/Gitlab/your machine can run all unit tests on commit
+            Gives confidence that new code doesn't break fundamental assumptions
+    Cons:   Expensive!!!
+            Test a small portion of code
+            Does not prove/verify end-to-end capability. All unit tests could work but the webapp still detonates
+            If you change business rules, you must spend time to update unit tests
+            Slows down development
+    Class annotations:
+        @RunWith(SpringRunner.class)
+        @SpringBootTest
+    Method annotation:
+        @Test
+    Current IndicatorServiceTest only runs on local postgres, better to embed a postgres db and inject your own test data
+    Uses test application.yaml, you need the same required fields (ex. development.mode) as in the regular application.yaml
+
+
+Lessons:
+    1. GenericExceptionHandler
+    2. Unit Tests
