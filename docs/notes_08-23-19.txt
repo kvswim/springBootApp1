@@ -1,0 +1,79 @@
+Lessons
+1. Lookup Table - table to represent a value as an integer. ex: Table ind_types
+                                                               | ID | Value    |
+                                                               | 1  | "domain" |
+                                                               | 2  | "ip"     |
+  Generic Lookup Table
+    Lookup table that contains lookup ids for every type of value, all in one place. Usually contains a lookup_type id
+    to prevent confusion, but still not foolproof...
+    Pros:
+        All lookup tables are in one place
+    Cons:
+        Does not handle sophisticated lookups
+        Joins are weird(er than they normally are)
+        You can insert the wrong lookup value
+
+
+select now();
+
+insert into reports(id, description)
+values(1, 'this is a description');
+
+select * from reports;
+
+select * from reports_aud;
+
+select * from indicators;
+
+select * from ind_types;
+
+select * from link_reports_indicators;
+
+insert into reports(id, description)
+values(nextval('seq_table_ids'), 'this is also a description');
+
+select nextval('seq_table_ids');
+
+delete from reports where id=1025;
+
+insert into indicators(id, value, created_date, created_by)
+values(nextval('seq_table_ids'), 'badguy@badguy.com', now(), 'random_user');
+insert into indicators(id, value, created_date, created_by)
+values(nextval('seq_table_ids'), '1.2.3.4', now(), 'random_user');
+
+select * from indicators
+order by value;
+
+select r.id as report_id, r.display_name, i.id as indicator_id, i.value
+from reports r
+join link_reports_indicators lri on (r.id = lri.report)
+join indicators i on (lri.indicator=i.id);
+
+select i.id, i.value, i.ind_type, it.value as ind_type_name
+from indicators i
+join ind_types it on (i.ind_type = it.id)
+where (i.ind_type = 1);
+
+select distinct r.id, r.display_name
+from reports r
+join link_reports_indicators lri on lri.report = r.id
+join indicators i on i.id = lri.indicator
+where i.ind_type = 2;
+
+select ind_types.value, count(ind_types.value)
+from indicators
+join ind_types on indicators.ind_type = ind_types.id
+group by ind_types.value;
+
+select count(*) from reports where created_date between '2019-03-01' and '2019-03-31';
+
+select to_char(created_date, 'YYYY-mm') from reports
+group by to_char(created_date, 'YYYY-mm');
+
+select to_char(created_date, 'YYYY-mm'), count(to_char(created_date, 'YYYY-mm'))
+from reports
+group by to_char(created_date, 'YYYY-mm');
+
+select to_char(created_date, 'YYYY'), count(to_char(created_date, 'YYYY'))
+from reports
+group by to_char(created_date, 'YYYY');

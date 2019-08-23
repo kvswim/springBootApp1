@@ -12,5 +12,5 @@ Lessons:
         Get which columns? Call vars what?              select r.id as report_id, r.display_name, i.id as indicator_id, i.value
         From what table?                                from reports r
         Join with what? With what equality?             join link_reports_indicators lri on (r.id=lri.report)
-        Join with what? With what equality?             join indicator i on (lri.indicator=i.id);
-
+        Join with what? With what equality?             join indicator i on (lri.indicator=i.id)
+        Filter down to an equality?                     where (i.ind_type=1);
