@@ -1,0 +1,17 @@
+Lessons
+SQL
+
+1. Join types: left, right, inner (regular), full
+
+2. Case statements:                         select s.sell_date,
+                     if                     case when u.full_name is null
+                     then/else                      then 'unknown' else u.full_name
+                     close if                       end as FullName,
+                                                    s.value
+                                             from sales s
+                                             full join users u on u.id = s.salesperson_id;
+    Bad practice to cast something in a column, better to make a new column if really req'd
+
+3. Before making a REST endpoint,
+        get the contract
+        Verify the data exists

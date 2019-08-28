@@ -1,0 +1,17 @@
+Lessons
+
+1. SQL where clause : used for filtering a dataset
+       where filtering: ilike, between, is, is not, <, >, <=, >=, =
+       Wildcard: %
+
+2. Client side vs server side pagination:
+    When you want to display a grid, which machine handles displaying/filtering results?
+    Client side: REST endpoint passes back all results (the whole dataset) and user's machine must render and sdisplay
+                    Pros: GG2EZ - simple to implement
+                          Works for a small amount of records
+                    Cons: Does not scale up
+    Server side: Server only passes a certain pagesize back
+                    Pros: Scalable
+                          Fast
+                    Cons: Server must handl filters, handle SQL where clause or ES query and send list of DTOs back
+
