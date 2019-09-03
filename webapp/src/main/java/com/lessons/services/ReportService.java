@@ -1,5 +1,7 @@
 package com.lessons.services;
 
+import com.lessons.filter.FilterParams;
+import com.lessons.filter.FilterService;
 import com.lessons.models.ShortReportDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,9 @@ public class ReportService {
 
     @Resource
     private DashboardDao dashboardDao;
+
+    @Resource
+    private FilterService filterService;
 
     @Value("${development.mode}")
     private Boolean developmentMode;
@@ -168,6 +173,27 @@ public class ReportService {
         JdbcTemplate jt = new JdbcTemplate(this.dataSource);
         String sql = "select id, display_name, description from reports";
         List<ShortReportDTO> resultingListofShortReports = jt.query(sql, rowMapper);
+        return resultingListofShortReports;
+    }
+
+    //case 1: no whereClause
+    //case 2: whereClause present.
+    public List<ShortReportDTO> getFilteredReports(List<String> filters) {
+        List<ShortReportDTO> resultingListofShortReports = new ArrayList<>();
+        BeanPropertyRowMapper rowMapper = new BeanPropertyRowMapper(ShortReportDTO.class);
+        FilterParams fp = filterService.getFilterParamsForFilters(filters);
+        String whereClause = fp.getSqlWhereClause();
+
+        String sql = "select id, display_name, description from reports";
+        if ( !whereClause.isEmpty() ) {
+            NamedParameterJdbcTemplate np = new NamedParameterJdbcTemplate(this.dataSource);
+            sql = sql + " where " + whereClause;
+            resultingListofShortReports  = np.query(sql, fp.getSqlParams(), rowMapper);
+        } else {
+            JdbcTemplate jt = new JdbcTemplate(this.dataSource);
+            resultingListofShortReports = jt.query(sql, rowMapper);
+        }
+
         return resultingListofShortReports;
     }
 }

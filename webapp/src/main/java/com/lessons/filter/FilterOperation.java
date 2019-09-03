@@ -29,18 +29,20 @@ public enum FilterOperation {
      *
      */
 
-    EQUALS("EQUALS", "=", 3),
-    GREATER("GREATER", ">", 3),
-    GREATER_EQUAL("GREATER_EQUAL", ">=", 3),
-    LESS("LESS", "<", 3),
-    LESS_EQUAL("LESS_EQUAL", "<=", 3),
-    BETWEEN("BETWEEN", "==", 4),
-    IN("IN", "", 3),
-    NOTIN("NOTIN", "", 5),
-    CONTAINS("CONTAINS", "", 3),
-    ICONTAINS("ICONTAINS", "", 3),
-    ISNULL("ISNULL", "=", 2),
-    ISNOTNULL("ISNOTNULL", "", 2);
+    //compareOperation is only for comparing number of tokens
+    EQUALS("EQUALS", "==", 3, "%s = :%s::Integer"),
+    STRING_EQUALS("STRING_EQUALS", "==", 3, "%s = :%s"), //string case example
+    GREATER("GREATER", "==", 3, "%s > :%s::Integer"),
+    GREATER_EQUAL("GREATER_EQUAL", "==", 3, "%s >= :%s::Integer"),
+    LESS("LESS", "==", 3, "%s < :%s::Integer"),
+    LESS_EQUAL("LESS_EQUAL", "==", 3, "%s <= :%s::Integer"),
+    BETWEEN("BETWEEN", "==", 4), //TODO
+    IN("IN", ">=", 3), //TODO
+    NOTIN("NOTIN", ">=", 3), //TODO
+    CONTAINS("CONTAINS", "==", 3, "%s LIKE %%:%s%%"),
+    ICONTAINS("ICONTAINS", "==", 3, "%s ILIKE %%:%s%%"),
+    ISNULL("ISNULL", "==", 2), //TODO
+    ISNOTNULL("ISNOTNULL", "==", 2); //TODO
 
 
     private static final Logger logger = LoggerFactory.getLogger(FilterOperation.class);
@@ -48,6 +50,11 @@ public enum FilterOperation {
     private int tokenCount;
     private String compareOperation;
     private String filterOperation;
+    private String sqlFormat;
+
+    public String getSqlFormat() {
+        return sqlFormat;
+    }
 
     public int getTokenCount() {
         return tokenCount;
@@ -66,11 +73,17 @@ public enum FilterOperation {
         this.compareOperation = compareOperation;
         this.tokenCount = tokenCount;
     }
+    private FilterOperation(String filterOperation, String compareOperation, int tokenCount, String sqlFormat) {
+        this.filterOperation = filterOperation;
+        this.compareOperation = compareOperation;
+        this.tokenCount = tokenCount;
+        this.sqlFormat = sqlFormat;
+    }
 
-    public FilterOperation getOperation(String operationName) {
+    public static FilterOperation getOperation(String operationName) {
         List<FilterOperation> allOperations = Arrays.asList(FilterOperation.values());
         for (int i=0; i< allOperations.size(); ++i) {
-            if(allOperations.get(i).getFilterOperation() == operationName)
+            if(allOperations.get(i).getFilterOperation().equalsIgnoreCase(operationName))
             {
                 return allOperations.get(i);
             }

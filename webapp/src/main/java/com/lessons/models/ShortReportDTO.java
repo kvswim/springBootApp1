@@ -6,10 +6,9 @@ public class ShortReportDTO {
 
     private Integer id;
 
-
     private String description;
 
-    @JsonProperty("alternateName")
+    //@JsonProperty("alternateName")
     private String displayName;
 
     public Integer getId() {
