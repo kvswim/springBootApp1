@@ -108,98 +108,77 @@ public class FilterService {
      * @return FilterParams object that holds the SQL partial where clause and a map of parameters
      */
     public FilterParams getFilterParamsForFilters(List<String> aFilters) {
+        //Generified. Could have used 12 IF statements
         logger.debug("getFilterParamsForFilters() started.");
         String sqlWhereClause = "";
         int varNumber = 1;
         Map<String, Object> mapOfBindVariables = new HashMap<>();
         // Loop through the list of Strings
-        for(String filter : aFilters) {
+        for(String filter : aFilters)
+        {
             List<String> parts = Arrays.asList(StringUtils.split(filter, "~"));
 
-            //String[] parts = StringUtils.split(filter, "~");
+            //SQL operation
             String operation = parts.get(1);
+            //Pull column name of table
             String columnName = parts.get(0);
-            FilterOperation br = FilterOperation.getOperation(operation);
-            String brFilterOperation = br.getFilterOperation();
-            String brSqlFormat = br.getSqlFormat();
+            //get enum operation
+            FilterOperation filterOperation = FilterOperation.getOperation(operation);
+            String brFilterOperation = filterOperation.getFilterOperation();
+            //pull clause helper, sqlFormat
+            String brSqlFormat = filterOperation.getSqlFormat();
+            String bindVariableName, sqlWhereFragment, value;
 
+            //special cases
+            //isnull, isnotnull
+            if(brFilterOperation.equalsIgnoreCase("isnull") ||
+                    brFilterOperation.equalsIgnoreCase("isnotnull"))
+            {
+                sqlWhereFragment = String.format(brSqlFormat, columnName);
+                sqlWhereClause = sqlWhereClause + sqlWhereFragment + " AND ";
+            }
+            //between
+            else if (brFilterOperation.equalsIgnoreCase("between"))
+            {
+                bindVariableName = "bindVariable" + varNumber;
+                String bindVariableName2 = "bindVariable" + (varNumber + 1);
+                sqlWhereFragment = String.format(brSqlFormat, columnName, bindVariableName, bindVariableName2);
+                sqlWhereClause = sqlWhereClause + sqlWhereFragment + " AND ";
+                value = parts.get(2);
+                String value2 = parts.get(3);
+                mapOfBindVariables.put(bindVariableName, value);
+                mapOfBindVariables.put(bindVariableName2, value2);
+            }
+            //in, notin
+            else if (brFilterOperation.equalsIgnoreCase("in") ||
+                    brFilterOperation.equalsIgnoreCase("notin"))
+            {
+                bindVariableName = "bindVariable" + varNumber;
+                sqlWhereFragment = String.format(brSqlFormat, columnName, bindVariableName);
+                sqlWhereClause = sqlWhereClause + sqlWhereFragment + " AND ";
+                mapOfBindVariables.put(bindVariableName, parts.subList(2, parts.size())); //token 3 until end
+                //"column_name in ListOfThings"
+            }
+            else {
+                //everything else where there are exactly 3 tokens
+                //equals, string_equals, greater, greater_equal, less, less_equal, contains, icontains
+                //create variable name for map
+                bindVariableName = "bindVariable" + varNumber;
+                //create where fragment
+                sqlWhereFragment = String.format(brSqlFormat, columnName, bindVariableName);
+                //create where clause
+                sqlWhereClause = sqlWhereClause + sqlWhereFragment + " AND ";
+                value = parts.get(2);
+                mapOfBindVariables.put(bindVariableName, value);
+            }
 
-            String bindVariableName = "bindVariable" + varNumber;
-            String sqlWhereFragment = String.format(brSqlFormat, columnName, bindVariableName);
-            //sqlWhereClause = sqlWhereClause + columnName + "=" + ":" + bindVariableName + " AND ";
-            sqlWhereClause = sqlWhereClause + sqlWhereFragment + " AND ";
-            String value = parts.get(2);
-            mapOfBindVariables.put(bindVariableName, value);
-
-//            if (brFilterOperation.equalsIgnoreCase("equals")) //EQUALS
-//            {
-//                String bindVariableName = "bindVariable" + varNumber;
-//                sqlWhereClause = sqlWhereClause + columnName + "=" + ":" + bindVariableName + " AND ";
-//                String value = parts.get(2);
-//                //since a bind variable is used we need to specify the type of object in map
-//                //equals will always be (integer)
-//                mapOfBindVariables.put(bindVariableName, Integer.valueOf(value));
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("greater")) //GREATER
-//            {
-//                String bindVariableName = "bindVariable" + varNumber;
-//                sqlWhereClause = sqlWhereClause + columnName + ">" + ":" + bindVariableName + " AND ";
-//                String value = parts.get(2);
-//                mapOfBindVariables.put(bindVariableName, Integer.valueOf(value));
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("greater_equal")) //GREATER_EQUAL
-//            {
-//                String bindVariableName = "bindVariable" + varNumber;
-//                sqlWhereClause = sqlWhereClause + columnName + ">=" + ":" + bindVariableName + " AND ";
-//                String value = parts.get(2);
-//                mapOfBindVariables.put(bindVariableName, Integer.valueOf(value));
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("less")) //LESS
-//            {
-//                String bindVariableName = "bindVariable" + varNumber;
-//                sqlWhereClause = sqlWhereClause + columnName + "<" + ":" + bindVariableName + " AND ";
-//                String value = parts.get(2);
-//                mapOfBindVariables.put(bindVariableName, Integer.valueOf(value));
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("less_equal")) //LESS_EQUAL
-//            {
-//                String bindVariableName = "bindVariable" + varNumber;
-//                sqlWhereClause = sqlWhereClause + columnName + ">=" + ":" + bindVariableName + " AND ";
-//                String value = parts.get(2);
-//                mapOfBindVariables.put(bindVariableName, Integer.valueOf(value));
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("between")) //BETWEEN
-//            {
-//
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("in")) //IN
-//            {
-//
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("notin")) //NOTIN
-//            {
-//
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("contains")) //CONTAINS
-//            {
-//
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("icontains")) //ICONTAINS
-//            {
-//
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("isnull")) //ISNULL
-//            {
-//
-//            }
-//            else if (brFilterOperation.equalsIgnoreCase("isnotnull")) //ISNOTNULL
-//            {
-//
-//            }
             //Different clauses can take differing number of bind variables
             varNumber = varNumber + 2;
         }
-        if(!sqlWhereClause.isEmpty()) {
+
+        //Chop off the final " AND "
+        if(!sqlWhereClause.isEmpty())
+        {
             sqlWhereClause = StringUtils.substring(sqlWhereClause, 0, (sqlWhereClause.length() - 4));
         }
         FilterParams filterParams = new FilterParams();

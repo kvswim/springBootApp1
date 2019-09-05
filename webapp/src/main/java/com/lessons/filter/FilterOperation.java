@@ -36,13 +36,13 @@ public enum FilterOperation {
     GREATER_EQUAL("GREATER_EQUAL", "==", 3, "%s >= :%s::Integer"),
     LESS("LESS", "==", 3, "%s < :%s::Integer"),
     LESS_EQUAL("LESS_EQUAL", "==", 3, "%s <= :%s::Integer"),
-    BETWEEN("BETWEEN", "==", 4), //TODO
-    IN("IN", ">=", 3), //TODO
-    NOTIN("NOTIN", ">=", 3), //TODO
+    BETWEEN("BETWEEN", "==", 4, "%s BETWEEN %s::Timestamp AND %s::Timestamp"),
+    IN("IN", ">=", 3, "%s IN (%s)"),
+    NOTIN("NOTIN", ">=", 3, "%s NOT IN (%s)"),
     CONTAINS("CONTAINS", "==", 3, "%s LIKE %%:%s%%"),
     ICONTAINS("ICONTAINS", "==", 3, "%s ILIKE %%:%s%%"),
-    ISNULL("ISNULL", "==", 2), //TODO
-    ISNOTNULL("ISNOTNULL", "==", 2); //TODO
+    ISNULL("ISNULL", "==", 2, "%s IS NULL"),
+    ISNOTNULL("ISNOTNULL", "==", 2, "%s IS NOT NULL");
 
 
     private static final Logger logger = LoggerFactory.getLogger(FilterOperation.class);
