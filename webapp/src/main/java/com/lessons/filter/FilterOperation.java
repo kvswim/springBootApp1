@@ -31,14 +31,14 @@ public enum FilterOperation {
 
     //compareOperation is only for comparing number of tokens
     EQUALS("EQUALS", "==", 3, "%s = :%s::Integer"),
-    STRING_EQUALS("STRING_EQUALS", "==", 3, "%s = :%s"), //string case example
+    //STRING_EQUALS("STRING_EQUALS", "==", 3, "%s = :%s"), //string case example
     GREATER("GREATER", "==", 3, "%s > :%s::Integer"),
     GREATER_EQUAL("GREATER_EQUAL", "==", 3, "%s >= :%s::Integer"),
     LESS("LESS", "==", 3, "%s < :%s::Integer"),
     LESS_EQUAL("LESS_EQUAL", "==", 3, "%s <= :%s::Integer"),
-    BETWEEN("BETWEEN", "==", 4, "%s BETWEEN %s::Timestamp AND %s::Timestamp"),
-    IN("IN", ">=", 3, "%s IN (%s)"),
-    NOTIN("NOTIN", ">=", 3, "%s NOT IN (%s)"),
+    BETWEEN("BETWEEN", "==", 4, "%s BETWEEN :%s::Timestamp AND :%s::Timestamp"),
+    IN("IN", ">=", 3, "%s IN (:%s)"),
+    NOTIN("NOTIN", ">=", 3, "%s NOT IN (:%s)"),
     CONTAINS("CONTAINS", "==", 3, "%s LIKE %%:%s%%"),
     ICONTAINS("ICONTAINS", "==", 3, "%s ILIKE %%:%s%%"),
     ISNULL("ISNULL", "==", 2, "%s IS NULL"),

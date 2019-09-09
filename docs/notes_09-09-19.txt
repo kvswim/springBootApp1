@@ -1,0 +1,26 @@
+Lessons:
+
+Definition of a REST call:
+    From late 90s-late 00s, webapps used ASP and JSP. Quickly turns into unmaintainable spaghetti code
+    In 2000, someone??? came up with the idea of REST calls
+    Stateless - hope was that it would be faster and more reliable
+    Used for data transfer (way to get/send data)
+    Uses directory structure API
+        GET /report/{id}
+    Uses HTTP protocol & HTTP request methods (GET, PUT, POST, DELETE)
+
+Connection pools in PostgreSQL
+    Default connection pool size is 100
+    System always reserves 3 for admin/CLI use
+    So there are (n-3) available for users
+    There is a view called pg_stat_activity that displays current connections
+    See # of max connections in pgsql db:
+        unix> grep max_connection /varl/lib/pgsql/9.5/data/postgresql.conf
+    How many connections are in use now?
+        pgsql> select usename, count(usename) from pg_stat_activity group by usename;
+    Hikari has connection config in application.yaml
+Connection pools (app-side): Hikari, Tomcat_CP, C3P0, SimpleDriverDataSource, SingleConnectionDataSource...
+Postgres: If you exceed the number of available connections, the app will crash.
+    Increase number of connections as necessary (or until you run out of RAM)
+Elastic: Push it until it breaks, then step back a little
+    "FIVE UGGA DUGGAS, THEN BACK ONE DUGGA"
