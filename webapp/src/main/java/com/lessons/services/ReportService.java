@@ -2,10 +2,12 @@ package com.lessons.services;
 
 import com.lessons.filter.FilterParams;
 import com.lessons.filter.FilterService;
+import com.lessons.models.ReportsStatsDTO;
 import com.lessons.models.ShortReportDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -195,6 +197,20 @@ public class ReportService {
         }
 
         return resultingListofShortReports;
+    }
+
+    public List<ReportsStatsDTO> getReportsStats() {
+        JdbcTemplate jt = new JdbcTemplate(this.dataSource);
+        List<ReportsStatsDTO> reportStats = new ArrayList<>();
+        BeanPropertyRowMapper rowMapper = new BeanPropertyRowMapper(ReportsStatsDTO.class);
+        String sql = "select lri.report, r.display_name, count(lri.indicator) as indicator_count \n" +
+                "from link_reports_indicators lri\n" +
+                "    join reports r on (r.id = lri.report)\n" +
+                "group by lri.report, r.display_name\n" +
+                "order by 3 desc\n" +
+                "limit 5";
+        reportStats = jt.query(sql,rowMapper);
+        return reportStats;
     }
 }
 

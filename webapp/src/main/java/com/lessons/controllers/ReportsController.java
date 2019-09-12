@@ -1,6 +1,7 @@
 package com.lessons.controllers;
 
 import com.lessons.filter.FilterService;
+import com.lessons.models.ReportsStatsDTO;
 import com.lessons.models.ShortReportDTO;
 import com.lessons.services.ReportService;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class ReportsController {
@@ -75,5 +77,15 @@ public class ReportsController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(listOfShortReportDTOs);
+    }
+
+    @RequestMapping(value="/api/reports/stats", method=RequestMethod.GET, produces="application/json")
+    public ResponseEntity<?> getReportsStats()
+    {
+        List<ReportsStatsDTO> listOfReportStats = reportService.getReportsStats();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(listOfReportStats);
     }
 }
