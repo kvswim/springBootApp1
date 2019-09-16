@@ -1,0 +1,37 @@
+Selecting the newest/oldest date from a table
+
+---Traditional SQL style
+select oldest.id, r.display_name, oldest.created_date, newest.last_modified_date
+from
+    (
+        select distinct on (id) id, timestamp as created_date
+        from reports_aud
+        order by id, timestamp asc
+    ) oldest
+join
+    (
+        select distinct on (id) id, timestamp as last_modified_date
+        from reports_aud
+        order by id, timestamp desc
+    ) newest on (oldest.id = newest.id)
+join
+        reports r on (r.id = oldest.id);
+
+---CTE style (Common Table Expression)
+with oldest as
+    (
+        select distinct on (id) id, timestamp as created_date
+        from reports_aud
+        order by id, timestamp asc
+    ),
+     newest as
+         (
+             select distinct on (id) id, timestamp as last_modified_date
+             from reports_aud
+             order by id, timestamp desc
+         )
+select r.id, r.display_name, oldest.created_date, newest.last_modified_date
+from oldest
+    join newest on (oldest.id = newest.id)
+    join reports r on (oldest.id = r.id)
+order by r.id;
