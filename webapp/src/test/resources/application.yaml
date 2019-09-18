@@ -7,3 +7,5 @@ app.datasource:
 
 development.mode: true
 network.name: NIPR
+hdfs.enable: true
+show.classified.banner: true
