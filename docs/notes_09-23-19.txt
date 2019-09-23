@@ -1,0 +1,51 @@
+Notes September 23 2019
+
+How to make SQL faster
+1. Materialized views
+    Cons: Must refresh materialized view every time a modification is made to the table
+          Fast reads but slow updates, inserts, deletes
+2. Partial fetches
+3. Loading indicator (spinning icon, progress bar etc)
+4. Show less data (resulting in simpler SQL view)
+5. Use ElasticSearch as a cache
+
+
+--CTE Style: 4m 38s
+create view indicators_view_cte as
+    with created_date as
+        (
+            select distinct on (id) id, timestamp as cd
+            from indicators_aud
+            order by id, timestamp asc
+        ),
+    modified as
+        (
+            select distinct on (id) id, timestamp as lmd
+            from indicators_aud
+            order by id, timestamp desc
+        )
+select i.id, i.value, created_date.cd as created_date, modified.lmd as last_update_date
+from indicators i
+    join created_date on (created_date.id = i.id)
+    join modified on (modified.id = i.id);
+
+--Classic SQL Style: 4s
+create view indicators_view_classic as
+select i.id, i.value, created_date.cd as created_date, last_modified_date.lmd as last_update_date
+from
+     (
+        select distinct on (id) id, timestamp as cd
+         from indicators_aud
+         order by id, timestamp asc
+     ) created_date
+join
+    (
+        select distinct on (id) id, timestamp as lmd
+        from indicators_aud
+        order by id, timestamp desc
+    ) last_modified_date
+on (created_date.id = last_modified_date.id)
+left join indicators i on (created_date.id = i.id);
+
+select count(*) from indicators_view_cte; --9.331s
+select count(*) from indicators_view_classic; --7.114s
