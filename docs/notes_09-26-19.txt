@@ -1,0 +1,104 @@
+09-26-2019
+
+ElasticSearch field types
+    Text: Case insensitive, allows wildcards. Cannot sort
+    Keyword: Case sensitive, good for aggregates. Can sort
+    Integer: -2^31 - 2^31
+    Long: -2^63 - 2^63
+    Date:
+    IP:
+    Boolean:
+
+Bulk Update types:
+    Index: If no data exists, create a record
+           If record exists, update the record
+    Create: If no data exists, create a record
+            If data exists, ERROR
+    Update: Partial updates of existing record
+
+GET /
+
+DELETE /reports
+
+PUT /reports
+{
+  "settings": {
+        "analysis": {
+          "normalizer": {
+            "case_insensitive_normalizer": {
+              "type": "custom",
+              "char_filter": [],
+              "filter": [ "lowercase", "asciifolding" ]
+            }
+          }
+        },
+        "refresh_interval": "1s"
+      },
+
+  "mappings" : {
+    "record" : {
+      "dynamic" : "strict",
+      "properties" : {
+        "actors" : {
+          "type" : "text",
+          "include_in_all": true
+        },
+        "description" : {
+          "type" : "text",
+          "include_in_all" : true
+        },
+        "priority" : {
+          "type" : "text",
+          "include_in_all" : true,
+          "fields": {
+            "sort" : {
+            "type" : "keyword",
+            "normalizer": "case_insensitive_normalizer"
+          }
+          }
+        },
+        "id" : {
+          "type" : "integer",
+          "include_in_all" : true,
+          "ignore_malformed": true
+        },
+        "ip" : {
+          "type" : "ip",
+          "include_in_all" : true,
+          "ignore_malformed": true
+        }
+      }
+    }
+  }
+}
+
+POST /reports/_search
+{
+  "query": {
+    "query_string": {
+    "query": "ip: \"192.168.0.0/24\""
+  }
+  },
+  "size" : 20,
+  "sort" : [
+    {"ip":
+      {
+        "order" : "asc",
+        "missing" : "_first"
+      }
+    }]
+}
+
+POST _bulk
+{"index" : { "_index" : "reports", "_type" : "record", "_id":1}}
+{"priority" : "low", "actors" : "John Smith", "description" : "he like it.", "id" : 1, "ip" : "192.168.1.1"}
+{"index" : { "_index" : "reports", "_type" : "record", "_id":2}}
+{"priority" : "LOW", "actors" : "george washington", "description" : "1776 WaS a GoOd YeAr.", "id" : 2, "ip" : "192.168.90.7"}
+{"index" : { "_index" : "reports", "_type" : "record", "_id":3}}
+{"priority" : "high", "actors" : "boaty mcboatface", "id" : 3, "ip" : "1.1.1.1"}
+{"index" : { "_index" : "reports", "_type" : "record", "_id":4}}
+{"priority" : "HIGH", "actors" : ["michael jackson", "George michael", "Old Guy 2"], "description" : "a bunch of old dead dudes", "id" : 4, "ip" : "192.0.2.0"}
+{"index" : { "_index" : "reports", "_type" : "record", "_id":5}}
+{"actors" : "Leeroy Jenkins", "description" : "time's up, let's do this", "id" : 5, "ip" : "192.168.80.10"}
+{"index" : { "_index" : "reports", "_type" : "record", "_id":6}}
+{"priority" : "low", "actors" : "Shia LeBouf", "description" : "don't let your memes be dreams", "id": 6, "ip" : "192.168.80.11"}

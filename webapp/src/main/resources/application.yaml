@@ -5,6 +5,8 @@ name: app1
 server.servlet.context-path: /app1
 server.port: 8080
 
+es.url: http://localhost:9201
+
 # SET ACTIVE PROFILE HERE
 spring.profiles.active: test
 
