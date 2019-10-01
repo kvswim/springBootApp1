@@ -1,5 +1,6 @@
 package com.lessons.services;
 
+import com.lessons.models.SearchDTO;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
 import org.slf4j.Logger;
@@ -22,25 +23,68 @@ public class ElasticSearchService {
         logger.debug("Inside testHttpClientConfig");
     }
 
-    /**
-     * Outgoing call to ElasticSearch
-     * @param rawQuery
-     * @return
-     * @throws Exception
-     */
-    public String runStringSearch(String rawQuery) throws Exception
-    {
+//    /**
+//     * Outgoing call to ElasticSearch
+//     * @param rawQuery
+//     * @return
+//     * @throws Exception
+//     */
+//    public String runStringSearch(String rawQuery) throws Exception
+//    {
+//        String result = "";
+//        Response response = asyncHttpClient.preparePost(esUrl + "/reports/_search?pretty=true?q=" + rawQuery)
+//                .setHeader("accepts", "application/json")
+//                .setHeader("contentType", "application/json")
+//                .execute()
+//                .get();
+//        result = response.getResponseBody();
+//
+//        if(response.getStatusCode() < 200 || response.getStatusCode() >= 300) {
+//            throw new RuntimeException("The response from ElasticSearchService.runStringSearch was not in the 200 series.");
+//        }
+//        return result;
+//    }
+
+    public String runElasticQueryWithDTO(SearchDTO searchDTO) throws Exception {
         String result = "";
-        Response response = asyncHttpClient.preparePost(esUrl + "/reports/_search?pretty=true?q=" + rawQuery)
-                .setHeader("accepts", "application/json")
-                .setHeader("contentType", "application/json")
-                .execute()
-                .get();
+        String url = esUrl + "/reports/_search?pretty=true";
+        String jsonRequest = constructJsonRequest(searchDTO);
+
+        Response response = asyncHttpClient.preparePost(url)
+                                            .setHeader("accepts", "application/json")
+                                            .setHeader("contentType", "application/json")
+                                            .setBody(jsonRequest)
+                                            .execute()
+                                            .get();
         result = response.getResponseBody();
 
-        if(response.getStatusCode() < 200 || response.getStatusCode() >= 300) {
-            throw new RuntimeException("The response from ElasticSearchService.runStringSearch was not in the 200 series.");
-        }
         return result;
+    }
+
+    public String constructJsonRequest(SearchDTO searchDTO)
+    {
+        String filters = searchDTO.getFilters().get(0); //single case only
+        filters = filters.replace(":", "\":\"");
+        filters = "\"" + filters + "\"";
+
+        String jsonRequest = "{\n" +
+                "   \"query\":{\n" +
+                "       \"bool\":{\n" +
+                "           \"must\": [\n" +
+                "               {\n" +
+                "                 \"query_string\": {\n" +
+                "                  \"query\":\"" + searchDTO.getRawQuery() +
+                "               \"}\n" +
+                "               }\n" +
+                "               ],\n" +
+                "                               \"filter\":[\n" +
+                "                                {\"term\":{\n" +
+                                                    filters +
+                "                                }}\n" +
+                "                               ]\n" +
+                "       }\n" +
+                "   }\n" +
+                "}";
+        return jsonRequest;
     }
 }
