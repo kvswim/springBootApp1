@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class ElasticSearchService {
@@ -63,27 +64,42 @@ public class ElasticSearchService {
 
     public String constructJsonRequest(SearchDTO searchDTO)
     {
-        String filters = searchDTO.getFilters().get(0); //single case only
-        filters = filters.replace(":", "\":\"");
-        filters = "\"" + filters + "\"";
+        //input: priority.filtered:h
+        //output: {"term" : {"priority.filtered" : "h"}}
+        String filters = "";
+        List<String> inputList = searchDTO.getFilters();
+        if(inputList != null && inputList.size() > 0) //if there are no filters just keep the filters string blank
+        {
+            for(String input : inputList)
+            {
+                //split input string priority.filtered.h
+                //result: inputSplit[0] == priority.filtered, inputSplit[1] == h
+                String[] inputSplit = input.split(":");
+                //construct the output string from above and append it to the filters string
+                filters = filters.concat("{\"term\" : {\"" + inputSplit[0] + "\" : \"" + inputSplit[1] + "\"}},");
+            }
+            //trim last comma
+            filters  = filters.substring(0, filters.length() - 1);
+        }
+
+        //replace a " with a \"
+        String rawQuery = searchDTO.getRawQuery().replace("\"", "\\\"");
+
 
         String jsonRequest = "{\n" +
-                "   \"query\":{\n" +
-                "       \"bool\":{\n" +
-                "           \"must\": [\n" +
-                "               {\n" +
-                "                 \"query_string\": {\n" +
-                "                  \"query\":\"" + searchDTO.getRawQuery() +
-                "               \"}\n" +
-                "               }\n" +
-                "               ],\n" +
-                "                               \"filter\":[\n" +
-                "                                {\"term\":{\n" +
-                                                    filters +
-                "                                }}\n" +
-                "                               ]\n" +
-                "       }\n" +
-                "   }\n" +
+                "  \"query\":{\n" +
+                "    \"bool\":{\n" +
+                "      \"must\": [\n" +
+                "        {\n" +
+                "          \"query_string\": {\n" +
+                "            \"query\":\"" + rawQuery + "\"}\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"filter\":[\n" +
+                            filters +
+                "      ]\n" +
+                "    }\n" +
+                "  }\n" +
                 "}";
         return jsonRequest;
     }

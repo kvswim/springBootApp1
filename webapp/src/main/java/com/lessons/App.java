@@ -1,5 +1,7 @@
 package com.lessons;
 
+import com.lessons.services.HealthCheckService;
+import com.lessons.utils.SpringAppContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -29,6 +31,13 @@ public class App {
 
         // Start up Spring Boot
         SpringApplication.run(App.class, args);
+
+        HealthCheckService hcs = (HealthCheckService) SpringAppContextUtils.getBean("com.lessons.services.HealthCheckService");
+        if(!hcs.doAllElasticSearchMappingsExist())
+        {
+            logger.debug("Health check failed! Webapp is NOT up.");
+            System.exit(666);
+        }
 
         logger.debug("WebApp is Up.");
     }

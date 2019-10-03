@@ -18,22 +18,41 @@ Bulk Update types:
 
 GET /
 
+GET /reports/_mapping
+
+POST /reports/_search
+
 DELETE /reports
 
 PUT /reports
 {
-  "settings": {
-        "analysis": {
-          "normalizer": {
-            "case_insensitive_normalizer": {
-              "type": "custom",
-              "char_filter": [],
-              "filter": [ "lowercase", "asciifolding" ]
-            }
-          }
-        },
-        "refresh_interval": "1s"
-      },
+         "settings": {
+           "analysis": {
+             "analyzer" : {
+               "my_ngram_analyzer" : {
+                 "tokenizer" : "my_ngram_tokenizer",
+                 "filter": ["lowercase"]
+               }
+             },
+             "tokenizer" : {
+               "my_ngram_tokenizer" : {
+                 "type" : "ngram",
+                 "min_gram" : "1",
+                 "max_gram" : "75",
+                 "token_chars": [ ]
+               }
+             },
+             "normalizer": {
+               "case_insensitive_normalizer": {
+                 "type": "custom",
+                 "char_filter": [],
+                 "filter": [ "lowercase", "asciifolding" ]
+               }
+             }
+           },
+           "max_result_window": 500000,
+           "refresh_interval": "1s"
+         },
 
   "mappings" : {
     "record" : {
@@ -41,31 +60,84 @@ PUT /reports
       "properties" : {
         "actors" : {
           "type" : "text",
-          "include_in_all": true
+          "include_in_all": true,
+          "fields" : {
+            	"filtered" : {
+            	"type" : "text",
+            	"analyzer" : "my_ngram_analyzer"
+            	}
+        }
         },
         "description" : {
           "type" : "text",
-          "include_in_all" : true
+          "include_in_all" : true,
+          "fields" : {
+            	"filtered" : {
+            	"type" : "text",
+            	"analyzer" : "my_ngram_analyzer"
+            	}
+        }
         },
         "priority" : {
           "type" : "text",
           "include_in_all" : true,
           "fields": {
+            "raw" : {
+              "type":"keyword"
+            },
             "sort" : {
             "type" : "keyword",
             "normalizer": "case_insensitive_normalizer"
+          },
+          "filtered" : {
+            "type" : "text",
+            "analyzer" : "my_ngram_analyzer"
           }
           }
         },
         "id" : {
           "type" : "integer",
           "include_in_all" : true,
-          "ignore_malformed": true
+          "ignore_malformed": true,
+          "fields" : {
+            	"filtered" : {
+            	"type" : "text",
+            	"analyzer" : "my_ngram_analyzer"
+            	}
+}
         },
         "ip" : {
           "type" : "ip",
           "include_in_all" : true,
-          "ignore_malformed": true
+          "ignore_malformed": true,
+          "fields" : {
+            	"filtered" : {
+            	"type" : "text",
+            	"analyzer" : "my_ngram_analyzer"
+            	}
+}
+        },
+        "created_date" : {
+          "type": "date",
+          "include_in_all": true,
+          "ignore_malformed": true,
+          "format": "yyyy-MM-dd || MM-dd-yyyy",
+          "fields" : {
+	            "filtered" : {
+	            "type" : "text",
+	            "analyzer" : "my_ngram_analyzer"
+	        }
+}
+        },
+        "is_alive" : {
+          "type" : "boolean",
+          "include_in_all" : true,
+          "fields" : {
+  	        "filtered" : {
+  	        "type" : "text",
+  	        "analyzer" : "my_ngram_analyzer"
+  	        }
+        }
         }
       }
     }
@@ -76,29 +148,64 @@ POST /reports/_search
 {
   "query": {
     "query_string": {
-    "query": "ip: \"192.168.0.0/24\""
+    "query": "description.filtered : \"*\""
   }
   },
-  "size" : 20,
-  "sort" : [
-    {"ip":
-      {
-        "order" : "asc",
-        "missing" : "_first"
-      }
-    }]
+  "size" : 20
 }
+
+POST /reports/_search
+{
+  "query":{
+    "bool":{
+      "must": [
+        {
+          "query_string": {
+            "query":"\"high\""}
+        }
+      ],
+      "filter":[
+        {"term":{"priority.filtered":"h"}} ,
+        {"term":{"description.filtered":"b"}}
+      ]
+    }
+  }
+}
+
+POST /reports/_search
+{
+  "query" : {
+    "query_string" : {
+      "query" : "description: jumps"
+    }
+  },
+  "highlight" : {
+    "pre_tags": ["<span class = \"mark\">"],
+    "post_tags" : ["</span>"],
+    "order" : "score",
+    "encoder" : "html",
+    "require_field_match" : false,
+    "fragment_size" : 150,
+    "fields" : {
+      "description": {},
+      "priority" : {}
+    }
+  }
+}
+
 
 POST _bulk
 {"index" : { "_index" : "reports", "_type" : "record", "_id":1}}
-{"priority" : "low", "actors" : "John Smith", "description" : "he like it.", "id" : 1, "ip" : "192.168.1.1"}
+{"priority" : "low", "actors" : "John Smith", "description" : "he like it.", "id" : 1, "ip" : "192.168.1.1", "created_date" : "2019-09-27", "is_alive" : true}
 {"index" : { "_index" : "reports", "_type" : "record", "_id":2}}
-{"priority" : "LOW", "actors" : "george washington", "description" : "1776 WaS a GoOd YeAr.", "id" : 2, "ip" : "192.168.90.7"}
+{"priority" : "LOW", "actors" : "george washington", "description" : "1776 WaS a GoOd YeAr.", "id" : 2, "ip" : "192.168.90.7", "created_date" : "2018-07-20", "is_alive" : false}
 {"index" : { "_index" : "reports", "_type" : "record", "_id":3}}
-{"priority" : "high", "actors" : "boaty mcboatface", "id" : 3, "ip" : "1.1.1.1"}
+{"priority" : "high", "actors" : "boaty mcboatface", "description" : "The quick brown fox jumps over the lazy dog. All work and no play makes Jack a dull boy. Sed ut perspiciatis undes omnis istes natus error sit volupatem accusantium doloremque laudantium, totam rem aperiam , eaque ispsa que ab illo inventore veritatis et quasi architecto... But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will givey ou a complete account of the system, and expound the actual teachings of the greate explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursure plesure rationnaly encounter consequences that are exremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure.", "id" : 3, "ip" : "1.1.1.1", "created_date" : "2019-09-29", "is_alive" : true}
 {"index" : { "_index" : "reports", "_type" : "record", "_id":4}}
-{"priority" : "HIGH", "actors" : ["michael jackson", "George michael", "Old Guy 2"], "description" : "a bunch of old dead dudes", "id" : 4, "ip" : "192.0.2.0"}
+{"priority" : "HIGH", "actors" : ["michael jackson", "George michael", "Old Guy 2"], "description" : "a bunch of old dead dudes", "id" : 4, "ip" : "192.0.2.0", "created_date" : "2019-09-26", "is_alive" : false}
 {"index" : { "_index" : "reports", "_type" : "record", "_id":5}}
-{"actors" : "Leeroy Jenkins", "description" : "time's up, let's do this", "id" : 5, "ip" : "192.168.80.10"}
+{"actors" : "Leeroy Jenkins", "description" : "time's up, let's do this*", "id" : 5, "ip" : "192.168.80.10", "created_date" : "2019-09-25", "is_alive" : false}
 {"index" : { "_index" : "reports", "_type" : "record", "_id":6}}
-{"priority" : "low", "actors" : "Shia LeBouf", "description" : "don't let your memes be dreams", "id": 6, "ip" : "192.168.80.11"}
+{"priority" : "low", "actors" : "Shia LeBouf", "description" : "don't let your memes be dreams", "id": 6, "ip" : "192.168.80.11", "created_date" : "2019-09-28", "is_alive" : true}
+{"index" : { "_index" : "reports", "_type" : "record", "_id":7}}
+{"priority" : "low", "actors" : "Some Guy", "description" : "just pretend you know what you're doing", "id": 6, "ip" : "192.168.80.11", "created_date" : "1995-03-22", "is_alive" : false}
