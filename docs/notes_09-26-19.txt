@@ -209,3 +209,27 @@ POST _bulk
 {"priority" : "low", "actors" : "Shia LeBouf", "description" : "don't let your memes be dreams", "id": 6, "ip" : "192.168.80.11", "created_date" : "2019-09-28", "is_alive" : true}
 {"index" : { "_index" : "reports", "_type" : "record", "_id":7}}
 {"priority" : "low", "actors" : "Some Guy", "description" : "just pretend you know what you're doing", "id": 6, "ip" : "192.168.80.11", "created_date" : "1995-03-22", "is_alive" : false}
+
+POST /_aliases
+{
+  "actions":
+  [
+    {
+      "remove":
+      {
+        "index": "reports2019101003",
+        "alias": "reports"
+      }
+    },
+       {
+          "add":
+          {
+             "index": "reports2019101004",
+             "alias": "reports"
+          }
+       }
+  ]
+}
+
+PUT reports2019101003/_alias/reports
+PUT reports/_alias/all_reports

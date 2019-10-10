@@ -2,8 +2,8 @@ package com.lessons.services;
 
 import com.google.gson.Gson;
 import com.lessons.App;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Response;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +38,8 @@ public class HealthCheckService {
                             .setHeader("accepts", "application/json")
                             .setHeader("contentType", "application/json")
                             .setBody(jsonRequest)
+                            .setRequestTimeout(60000) //milliseconds
+                            .setReadTimeout(90000)
                             .execute()
                             .get();
         String jsonResponse = response.getResponseBody();

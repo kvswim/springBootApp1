@@ -1,6 +1,7 @@
 package com.lessons.config;
 
-import com.ning.http.client.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +18,10 @@ public class HttpClientConfig {
     @Bean
     public AsyncHttpClient asyncHttpClient()
     {
-        return new AsyncHttpClient();
+        AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient();
+        logger.debug("New asyncHttpClient created. Default read timeout: {}", asyncHttpClient.getConfig().getReadTimeout());
+        logger.debug("New asyncHttpClient created. Default request timeout: {} ", asyncHttpClient.getConfig().getRequestTimeout());
+        return asyncHttpClient;
     }
 
     public HttpClientConfig()

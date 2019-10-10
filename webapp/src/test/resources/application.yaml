@@ -9,3 +9,5 @@ development.mode: true
 network.name: NIPR
 hdfs.enable: true
 show.classified.banner: true
+
+es.url: http://localhost:9201/\

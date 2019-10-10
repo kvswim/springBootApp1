@@ -1,12 +1,12 @@
 package com.lessons.services;
 
 import com.lessons.models.SearchDTO;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.Response;
 import javax.annotation.Resource;
 import java.util.List;
 

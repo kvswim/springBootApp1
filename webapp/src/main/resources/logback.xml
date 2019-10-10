@@ -18,6 +18,10 @@
         <appender-ref ref="CONSOLE"/>
     </logger>
 
+    <logger name="org.asynchttpclient.netty" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
     <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
     </root>
