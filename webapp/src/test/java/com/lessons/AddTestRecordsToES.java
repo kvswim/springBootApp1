@@ -1,5 +1,6 @@
 package com.lessons;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.gson.Gson;
@@ -76,10 +77,40 @@ public class AddTestRecordsToES {
                 .execute()
                 .get();
 
+        if(response.getStatusCode() == 200)
+        {
+            String jsonResponse = response.getResponseBody();
+            logger.debug("jsonResponse is {} characters long", jsonResponse.length());
 
-        String jsonResponse = response.getResponseBody();
-//        Map<String, Object> mapOfJsonResponse = gson.fromJson(jsonResponse, Map.class);
+            long start = System.currentTimeMillis();
+            String[] jsonResponseArray = jsonResponse.split("\"items\"");
+            String onlyStuffWeCareAbout = jsonResponseArray[0];
+            onlyStuffWeCareAbout = onlyStuffWeCareAbout.substring(0, onlyStuffWeCareAbout.length()-1);
+            onlyStuffWeCareAbout = onlyStuffWeCareAbout + "}";
+            TypeReference tr = new TypeReference<Map<String,Object>>(){};
+            Map<String, Object> mapOfJsonResponse = objectMapper.readValue(onlyStuffWeCareAbout, tr);
+            long end = System.currentTimeMillis();
+            logger.debug("Conversion took: {} ms", end - start);
+            int stop = 1;
 //        boolean checkIfErrorDuringInsert = (boolean) mapOfJsonResponse.get("errors");
 //        assertFalse(checkIfErrorDuringInsert);
+//            TypeReference tr = new TypeReference<Map<String,Object>>(){};
+//            long start = System.currentTimeMillis();
+//            DTOTest mapOfJsonResponse = objectMapper.readValue(jsonResponse, DTOTest.class);
+//            long end = System.currentTimeMillis();
+//            logger.debug("Jackson map conversion took: {} ms", end-start);
+//            start = System.currentTimeMillis();
+//            Map<String, Object> mapOfJsonResponseGson = gson.fromJson(jsonResponse, Map.class);
+//            end = System.currentTimeMillis();
+//            logger.debug("Gson map conversion took: {} ms", end - start);
+            //Boolean checkIfErrorDuringInsert = (Boolean) mapOfJsonResponse.get("errors");
+//            if(checkIfErrorDuringInsert) {
+//                logger.error("There were errors during the ElasticSearch insert.");
+//                throw new RuntimeException("Deal with it.");
+            }
+//        } else {
+//            throw new RuntimeException("Deal with it.");
+//        }
+
     }
 }
